@@ -155,7 +155,7 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
                                                     className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary cursor-pointer text-center h-full"
                                                 >
                                                     <span className="text-sm font-semibold">
-                                                        {t.options[option as keyof typeof t.options]}
+                                                        {t.options[option as "yes" | "no" | "planning"]}
                                                     </span>
                                                 </Label>
                                             </div>
@@ -185,7 +185,7 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
                                                     className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary cursor-pointer text-center h-full"
                                                 >
                                                     <span className="text-sm font-semibold">
-                                                        {t.options[option as keyof typeof t.options]}
+                                                        {t.options[option as "yes" | "no" | "planning"]}
                                                     </span>
                                                 </Label>
                                             </div>
