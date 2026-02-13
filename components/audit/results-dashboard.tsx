@@ -6,6 +6,8 @@ import { AuditResults } from "@/hooks/use-audit-calculator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { AlertCircle, CheckCircle2, TrendingUp, DollarSign, Users, Target, Download, RefreshCw } from "lucide-react"
+import { useRef } from "react"
+import { useReactToPrint } from "react-to-print"
 
 interface ResultsDashboardProps {
     results: AuditResults
@@ -13,8 +15,18 @@ interface ResultsDashboardProps {
     onReset: () => void
 }
 
+
+
+// ... imports
+
 export function ResultsDashboard({ results, formData, onReset }: ResultsDashboardProps) {
     const { t } = useLanguage()
+    const componentRef = useRef<HTMLDivElement>(null)
+
+    const handlePrint = useReactToPrint({
+        contentRef: componentRef as any,
+        documentTitle: `CRM_Audit_Results_${new Date().toISOString().split("T")[0]}`,
+    })
 
     const getRiskColor = (level: string) => {
         if (level === "low") return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
@@ -34,9 +46,11 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
     const miscBudget = totalBudget * 0.15
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div ref={componentRef} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 p-4 sm:p-0 bg-background/50 backdrop-blur-sm rounded-xl">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
+                {/* ... Header content ... */}
                 <div>
+                    {/* ... Title ... */}
                     <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                         {t.results.title}
                     </h2>
@@ -46,20 +60,32 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
                         </span>
                     </p>
                 </div>
+
                 <div className="flex gap-2 w-full sm:w-auto">
                     <Button variant="outline" onClick={onReset} className="flex-1 sm:flex-none">
                         <RefreshCw className="mr-2 h-4 w-4" />
                         {t.common.finish}
                     </Button>
-                    <Button className="flex-1 sm:flex-none">
+                    <Button onClick={() => handlePrint()} className="flex-1 sm:flex-none">
                         <Download className="mr-2 h-4 w-4" />
                         PDF
                     </Button>
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-all">
+            {/* Print Header (Visible only in print) */}
+            <div className="hidden print:block mb-8">
+                <h1 className="text-4xl font-bold mb-2">{t.header.title}</h1>
+                <p className="text-muted-foreground">{t.header.subtitle}</p>
+                <div className="mt-4 border-b pb-4">
+                    <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
+                </div>
+            </div>
+
+            {/* Grid Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 print:grid-cols-2">
+                {/* ... Cards code (replace content with t.results keys) ... */}
+                <Card className="border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-all print:border print:shadow-none">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">
                             {t.results.leadsRequired}
@@ -72,7 +98,7 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md transition-all">
+                <Card className="border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md transition-all print:border print:shadow-none">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">
                             {t.results.budgetRequired}
@@ -86,7 +112,7 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
                         <p className="text-xs text-muted-foreground mt-1">Min</p>
                     </CardContent>
                 </Card>
-                <Card className="border-l-4 border-l-violet-500 shadow-sm hover:shadow-md transition-all bg-gradient-to-br from-background to-violet-500/5">
+                <Card className="border-l-4 border-l-violet-500 shadow-sm hover:shadow-md transition-all bg-gradient-to-br from-background to-violet-500/5 print:border print:shadow-none print:bg-none">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">
                             {t.results.optimalBudget}
@@ -100,7 +126,7 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
                         <p className="text-xs text-muted-foreground mt-1">Optimal</p>
                     </CardContent>
                 </Card>
-                <Card className="border-l-4 border-l-orange-500 shadow-sm hover:shadow-md transition-all">
+                <Card className="border-l-4 border-l-orange-500 shadow-sm hover:shadow-md transition-all print:border print:shadow-none">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">
                             {t.results.clientsRequired}
@@ -115,8 +141,8 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
                 </Card>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card className="shadow-sm">
+            <div className="grid gap-6 md:grid-cols-2 print:grid-cols-1 print:gap-4">
+                <Card className="shadow-sm print:shadow-none print:border">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <CheckCircle2 className="h-5 w-5 text-primary" />
@@ -128,8 +154,8 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {results.recommendations.map((recKey, index) => (
-                            <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border/50">
-                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                            <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border/50 print:bg-transparent print:border-none print:p-0">
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary print:border print:border-primary">
                                     {index + 1}
                                 </span>
                                 <p className="text-sm leading-relaxed">
@@ -137,52 +163,46 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
                                 </p>
                             </div>
                         ))}
-                        {results.recommendations.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground p-4 bg-muted/20 rounded-lg border border-dashed">
-                                <CheckCircle2 className="h-8 w-8 mb-2 opacity-20" />
-                                <p>Great job! No critical recommendations at this stage.</p>
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
 
-                <Card className="shadow-sm">
+                <Card className="shadow-sm print:shadow-none print:border">
                     <CardHeader>
-                        <CardTitle>Budget Distribution (Estimated)</CardTitle>
-                        <CardDescription>Recommended allocation of your optimal budget.</CardDescription>
+                        <CardTitle>{t.results.budgetDistribution}</CardTitle>
+                        <CardDescription>{t.results.allocationDescription}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 pt-6">
                         {/* Simple CSS Chart */}
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Ads (70%)</span>
+                                <span className="text-muted-foreground">{t.results.ads}</span>
                                 <span className="font-medium">{t.results.currency}{adBudget.toLocaleString()}</span>
                             </div>
-                            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-                                <div className="h-full bg-blue-500 rounded-full" style={{ width: "70%" }} />
+                            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden print:bg-gray-200">
+                                <div className="h-full bg-blue-500 rounded-full print:bg-black" style={{ width: "70%" }} />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Tools & CRM (15%)</span>
+                                <span className="text-muted-foreground">{t.results.tools}</span>
                                 <span className="font-medium">{t.results.currency}{toolsBudget.toLocaleString()}</span>
                             </div>
-                            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-                                <div className="h-full bg-violet-500 rounded-full" style={{ width: "15%" }} />
+                            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden print:bg-gray-200">
+                                <div className="h-full bg-violet-500 rounded-full print:bg-black" style={{ width: "15%" }} />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Management & Misc (15%)</span>
+                                <span className="text-muted-foreground">{t.results.management}</span>
                                 <span className="font-medium">{t.results.currency}{miscBudget.toLocaleString()}</span>
                             </div>
-                            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-                                <div className="h-full bg-orange-500 rounded-full" style={{ width: "15%" }} />
+                            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden print:bg-gray-200">
+                                <div className="h-full bg-orange-500 rounded-full print:bg-black" style={{ width: "15%" }} />
                             </div>
                         </div>
 
                         <div className="pt-4 mt-4 border-t flex justify-between items-center">
-                            <span className="font-semibold text-sm text-muted-foreground">Total Optimal</span>
+                            <span className="font-semibold text-sm text-muted-foreground">{t.results.totalScale}</span>
                             <span className="text-xl font-bold text-primary">{t.results.currency}{results.budgetRange.optimal.toLocaleString()}</span>
                         </div>
                     </CardContent>
