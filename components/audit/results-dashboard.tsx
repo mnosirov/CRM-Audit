@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { AlertCircle, CheckCircle2, TrendingUp, DollarSign, Users, Target, Download, RefreshCw } from "lucide-react"
 import { useRef } from "react"
-import { useReactToPrint } from "react-to-print"
+import html2canvas from "html2canvas"
+import jsPDF from "jspdf"
 
 interface ResultsDashboardProps {
     results: AuditResults
@@ -15,18 +16,41 @@ interface ResultsDashboardProps {
     onReset: () => void
 }
 
-
-
-// ... imports
-
 export function ResultsDashboard({ results, formData, onReset }: ResultsDashboardProps) {
     const { t } = useLanguage()
     const componentRef = useRef<HTMLDivElement>(null)
 
-    const handlePrint = useReactToPrint({
-        contentRef: componentRef as any,
-        documentTitle: `CRM_Audit_Results_${new Date().toISOString().split("T")[0]}`,
-    })
+    const handleDownloadPDF = async () => {
+        if (!componentRef.current) return
+
+        try {
+            const element = componentRef.current
+            const canvas = await html2canvas(element, {
+                scale: 2, // Improve quality
+                useCORS: true,
+                backgroundColor: "#ffffff", // Ensure white background for PDF
+                ignoreElements: (node) => {
+                    // Ignore elements with 'print:hidden' class manually if needed, 
+                    // but html2canvas respects CSS to some extent. 
+                    // Better to clone and modify, but for now simple capture.
+                    return node.classList?.contains("print:hidden")
+                }
+            })
+
+            const imgData = canvas.toDataURL("image/png")
+            const pdf = new jsPDF({
+                orientation: "portrait",
+                unit: "px",
+                format: [canvas.width, canvas.height]
+            })
+
+            pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height)
+            pdf.save(`CRM_Audit_Results_${new Date().toISOString().split("T")[0]}.pdf`)
+        } catch (error) {
+            console.error("PDF generation failed:", error)
+            alert("PDF yuklab olishda xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.")
+        }
+    }
 
     const getRiskColor = (level: string) => {
         if (level === "low") return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
@@ -66,7 +90,7 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
                         <RefreshCw className="mr-2 h-4 w-4" />
                         {t.common.finish}
                     </Button>
-                    <Button onClick={() => handlePrint()} className="flex-1 sm:flex-none">
+                    <Button onClick={handleDownloadPDF} className="flex-1 sm:flex-none">
                         <Download className="mr-2 h-4 w-4" />
                         PDF
                     </Button>
