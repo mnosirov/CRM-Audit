@@ -1,15 +1,11 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { CheckCircle, AlertTriangle, XCircle, RefreshCcw } from "lucide-react"
-
-import { AuditResults } from "@/hooks/use-audit-calculator"
-import { AuditFormValues } from "@/lib/schemas"
 import { useLanguage } from "@/components/providers/language-provider"
+import { AuditFormValues } from "@/lib/schemas"
+import { AuditResults } from "@/hooks/use-audit-calculator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Progress } from "@/components/ui/progress"
+import { AlertCircle, CheckCircle2, TrendingUp, DollarSign, Users, Target, Download, RefreshCw } from "lucide-react"
 
 interface ResultsDashboardProps {
     results: AuditResults
@@ -20,120 +16,178 @@ interface ResultsDashboardProps {
 export function ResultsDashboard({ results, formData, onReset }: ResultsDashboardProps) {
     const { t } = useLanguage()
 
-    const riskColor = {
-        low: "text-emerald-500",
-        medium: "text-yellow-500",
-        high: "text-orange-500",
-        critical: "text-destructive",
+    const getRiskColor = (level: string) => {
+        if (level === "low") return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
+        if (level === "medium") return "text-yellow-500 bg-yellow-500/10 border-yellow-500/20"
+        if (level === "high") return "text-orange-500 bg-orange-500/10 border-orange-500/20"
+        return "text-red-500 bg-red-500/10 border-red-500/20"
     }
 
-    const riskIcon = {
-        low: <CheckCircle className="h-8 w-8 text-emerald-500" />,
-        medium: <CheckCircle className="h-8 w-8 text-yellow-500" />, // Or AlertCircle
-        high: <AlertTriangle className="h-8 w-8 text-orange-500" />,
-        critical: <XCircle className="h-8 w-8 text-destructive" />,
+    const getRiskLabel = (level: string) => {
+        return t.risks[level as keyof typeof t.risks]
     }
+
+    // Calculate budget distribution based on OPTIMAL budget
+    const totalBudget = results.budgetRange.optimal
+    const adBudget = totalBudget * 0.7
+    const toolsBudget = totalBudget * 0.15
+    const miscBudget = totalBudget * 0.15
 
     return (
-        <div className="space-y-6">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <Card className="border-t-4 border-t-primary shadow-lg overflow-hidden">
-                    {/* Header with Risk Level */}
-                    <div className="bg-muted/30 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div>
-                            <h2 className="text-2xl font-bold">{t.results.title}</h2>
-                            <p className="text-muted-foreground">{formData.niche}</p>
-                        </div>
-                        <div className="flex items-center gap-3 bg-background px-4 py-2 rounded-full border shadow-sm">
-                            {riskIcon[results.riskLevel]}
-                            <div className="flex flex-col">
-                                <span className="text-xs uppercase font-semibold text-muted-foreground">{t.results.riskLevel}</span>
-                                <span className={`font-bold ${riskColor[results.riskLevel]}`}>
-                                    {t.risks[results.riskLevel]}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                        {t.results.title}
+                    </h2>
+                    <p className="text-muted-foreground mt-1">
+                        {t.results.riskLevel}: <span className={`font-semibold px-2 py-0.5 rounded-full text-xs border ${getRiskColor(results.riskLevel)}`}>
+                            {getRiskLabel(results.riskLevel)}
+                        </span>
+                    </p>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Button variant="outline" onClick={onReset} className="flex-1 sm:flex-none">
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        {t.common.finish}
+                    </Button>
+                    <Button className="flex-1 sm:flex-none">
+                        <Download className="mr-2 h-4 w-4" />
+                        PDF
+                    </Button>
+                </div>
+            </div>
 
-                    <Separator />
-
-                    <CardContent className="p-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        {/* Leads Required */}
-                        <div className="bg-secondary/20 p-4 rounded-lg border">
-                            <span className="text-sm font-medium text-muted-foreground">{t.results.clientsRequired}</span>
-                            <div className="mt-2 flex items-baseline gap-1">
-                                <span className="text-3xl font-bold text-primary">{results.clientsRequired}</span>
-                                <span className="text-xs text-muted-foreground">{t.results.clients}</span>
-                            </div>
-                        </div>
-
-                        <div className="bg-secondary/20 p-4 rounded-lg border">
-                            <span className="text-sm font-medium text-muted-foreground">{t.results.leadsRequired}</span>
-                            <div className="mt-2 flex items-baseline gap-1">
-                                <span className="text-3xl font-bold text-primary">{results.leadsRequired}</span>
-                                <span className="text-xs text-muted-foreground">{t.results.leads}</span>
-                            </div>
-                        </div>
-
-                        <div className="bg-secondary/20 p-4 rounded-lg border">
-                            <span className="text-sm font-medium text-muted-foreground">{t.results.budgetRequired}</span>
-                            <div className="mt-2 flex items-baseline gap-1">
-                                <span className="text-2xl font-bold">{results.budgetRange.min.toLocaleString()}</span>
-                                <span className="text-sm font-semibold">{t.results.currency}</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">Min</p>
-                        </div>
-
-                        <div className="bg-secondary/50 p-4 rounded-lg border border-primary/20">
-                            <span className="text-sm font-medium text-muted-foreground">{t.results.optimalBudget}</span>
-                            <div className="mt-2 flex items-baseline gap-1">
-                                <span className="text-3xl font-bold text-primary">{results.budgetRange.optimal.toLocaleString()}</span>
-                                <span className="text-sm font-semibold">{t.results.currency}</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">Optimal</p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-all">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            {t.results.leadsRequired}
+                        </CardTitle>
+                        <Users className="h-4 w-4 text-blue-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-foreground">
+                            {results.leadsRequired} <span className="text-xs font-normal text-muted-foreground">{t.results.leads}</span>
                         </div>
                     </CardContent>
-
-                    {/* Recommendations */}
-                    <div className="px-6 pb-6">
-                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                            <CheckCircle className="h-5 w-5 text-emerald-500" />
-                            {t.results.recommendations}
-                        </h3>
-                        <div className="grid gap-3">
-                            {results.recommendations.length > 0 ? (
-                                results.recommendations.map((recKey, index) => (
-                                    <motion.div
-                                        key={recKey}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border"
-                                    >
-                                        <div className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" />
-                                        <p className="text-sm">{t.recommendations[recKey as keyof typeof t.recommendations]}</p>
-                                    </motion.div>
-                                ))
-                            ) : (
-                                <div className="bg-emerald-50 text-emerald-900 p-4 rounded-lg border border-emerald-200">
-                                    <p className="text-sm">Tabriklaymiz! Sizning holatingiz a'lo darajada. O'sishda davom eting!</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="p-6 bg-muted/20 border-t flex justify-center">
-                        <Button variant="outline" onClick={onReset} className="gap-2">
-                            <RefreshCcw className="h-4 w-4" />
-                            {t.common.finish} / Qayta hisoblash
-                        </Button>
-                    </div>
                 </Card>
-            </motion.div>
+                <Card className="border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md transition-all">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            {t.results.budgetRequired}
+                        </CardTitle>
+                        <DollarSign className="h-4 w-4 text-emerald-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-foreground">
+                            {t.results.currency}{results.budgetRange.min.toLocaleString()}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Min</p>
+                    </CardContent>
+                </Card>
+                <Card className="border-l-4 border-l-violet-500 shadow-sm hover:shadow-md transition-all bg-gradient-to-br from-background to-violet-500/5">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            {t.results.optimalBudget}
+                        </CardTitle>
+                        <TrendingUp className="h-4 w-4 text-violet-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-foreground">
+                            {t.results.currency}{results.budgetRange.optimal.toLocaleString()}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Optimal</p>
+                    </CardContent>
+                </Card>
+                <Card className="border-l-4 border-l-orange-500 shadow-sm hover:shadow-md transition-all">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            {t.results.clientsRequired}
+                        </CardTitle>
+                        <Target className="h-4 w-4 text-orange-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-foreground">
+                            {results.clientsRequired} <span className="text-xs font-normal text-muted-foreground">{t.results.clients}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+                <Card className="shadow-sm">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                            {t.results.recommendations}
+                        </CardTitle>
+                        <CardDescription>
+                            Based on your inputs, we recommend the following actions.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {results.recommendations.map((recKey, index) => (
+                            <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border/50">
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                                    {index + 1}
+                                </span>
+                                <p className="text-sm leading-relaxed">
+                                    {t.recommendations[recKey as keyof typeof t.recommendations] || recKey}
+                                </p>
+                            </div>
+                        ))}
+                        {results.recommendations.length === 0 && (
+                            <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground p-4 bg-muted/20 rounded-lg border border-dashed">
+                                <CheckCircle2 className="h-8 w-8 mb-2 opacity-20" />
+                                <p>Great job! No critical recommendations at this stage.</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card className="shadow-sm">
+                    <CardHeader>
+                        <CardTitle>Budget Distribution (Estimated)</CardTitle>
+                        <CardDescription>Recommended allocation of your optimal budget.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6 pt-6">
+                        {/* Simple CSS Chart */}
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Ads (70%)</span>
+                                <span className="font-medium">{t.results.currency}{adBudget.toLocaleString()}</span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+                                <div className="h-full bg-blue-500 rounded-full" style={{ width: "70%" }} />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Tools & CRM (15%)</span>
+                                <span className="font-medium">{t.results.currency}{toolsBudget.toLocaleString()}</span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+                                <div className="h-full bg-violet-500 rounded-full" style={{ width: "15%" }} />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Management & Misc (15%)</span>
+                                <span className="font-medium">{t.results.currency}{miscBudget.toLocaleString()}</span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+                                <div className="h-full bg-orange-500 rounded-full" style={{ width: "15%" }} />
+                            </div>
+                        </div>
+
+                        <div className="pt-4 mt-4 border-t flex justify-between items-center">
+                            <span className="font-semibold text-sm text-muted-foreground">Total Optimal</span>
+                            <span className="text-xl font-bold text-primary">{t.results.currency}{results.budgetRange.optimal.toLocaleString()}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     )
 }
