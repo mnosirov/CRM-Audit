@@ -43,11 +43,11 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
             niche: "",
             hasCrm: undefined,
             hasSalesDept: undefined,
-            incomeGoal: 0,
-            avgCheck: 0,
-            conversion: 0,
-            currentLeads: 0,
-            currentBudget: 0,
+            incomeGoal: undefined,
+            avgCheck: undefined,
+            conversion: undefined,
+            currentLeads: undefined,
+            currentBudget: undefined,
         },
         mode: "onChange",
     })
@@ -60,6 +60,12 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
         watch,
         formState: { errors },
     } = form
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (["-", "+", "e", "E"].includes(e.key)) {
+            e.preventDefault()
+        }
+    }
 
     const handleNext = async () => {
         let fieldsToValidate: (keyof AuditFormValues)[] = []
@@ -123,7 +129,7 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
                                         defaultValue={watch("niche")}
                                     >
                                         <SelectTrigger id="niche" className="h-12 text-base">
-                                            <SelectValue placeholder={t.questions.niche} />
+                                            <SelectValue placeholder={t.common.select} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {Object.entries(t.options.niches).map(([key, label]) => (
@@ -216,8 +222,10 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
                                         <Input
                                             id="currentLeads"
                                             type="number"
+                                            min={0}
                                             placeholder="0"
                                             className="pl-10 h-12 text-base"
+                                            onKeyDown={handleKeyDown}
                                             {...register("currentLeads", { valueAsNumber: true })}
                                         />
                                     </div>
@@ -232,8 +240,10 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
                                         <Input
                                             id="currentBudget"
                                             type="number"
+                                            min={0}
                                             placeholder="0"
                                             className="pl-10 h-12 text-base"
+                                            onKeyDown={handleKeyDown}
                                             {...register("currentBudget", { valueAsNumber: true })}
                                         />
                                     </div>
@@ -260,8 +270,10 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
                                         <Input
                                             id="incomeGoal"
                                             type="number"
+                                            min={0}
                                             placeholder="10000"
                                             className="pl-10 h-12 text-base"
+                                            onKeyDown={handleKeyDown}
                                             {...register("incomeGoal", { valueAsNumber: true })}
                                         />
                                     </div>
@@ -276,8 +288,10 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
                                         <Input
                                             id="avgCheck"
                                             type="number"
+                                            min={0}
                                             placeholder="100"
                                             className="pl-10 h-12 text-base"
+                                            onKeyDown={handleKeyDown}
                                             {...register("avgCheck", { valueAsNumber: true })}
                                         />
                                     </div>
@@ -292,9 +306,12 @@ export function StepForm({ onSubmit, isSubmitting }: StepFormProps) {
                                         <Input
                                             id="conversion"
                                             type="number"
+                                            min={0}
+                                            max={100}
                                             placeholder="5"
                                             step="0.1"
                                             className="pl-10 h-12 text-base"
+                                            onKeyDown={handleKeyDown}
                                             {...register("conversion", { valueAsNumber: true })}
                                         />
                                     </div>

@@ -5,6 +5,7 @@ export const translations = {
         common: {
             next: "Keyingi",
             step: "Bosqich",
+            select: "Tanlang",
             back: "Orqaga",
             finish: "Yakunlash",
             calculate: "Hisoblash",
@@ -71,6 +72,7 @@ export const translations = {
         common: {
             next: "Далее",
             step: "Шаг",
+            select: "Выберите",
             back: "Назад",
             finish: "Завершить",
             calculate: "Рассчитать",
