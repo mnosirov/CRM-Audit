@@ -26,16 +26,13 @@ export function ResultsDashboard({ results, formData, onReset }: ResultsDashboar
         try {
             const element = componentRef.current
             const canvas = await html2canvas(element, {
-                scale: 2, // Improve quality
+                scale: 2,
                 useCORS: true,
-                backgroundColor: "#ffffff", // Ensure white background for PDF
+                backgroundColor: "#ffffff",
                 ignoreElements: (node) => {
-                    // Ignore elements with 'print:hidden' class manually if needed, 
-                    // but html2canvas respects CSS to some extent. 
-                    // Better to clone and modify, but for now simple capture.
                     return node.classList?.contains("print:hidden")
                 }
-            })
+            } as any)
 
             const imgData = canvas.toDataURL("image/png")
             const pdf = new jsPDF({
